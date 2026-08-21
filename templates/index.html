@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50 text-slate-900">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduWave | Technical Academy</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="min-h-full flex flex-col bg-[#f8fafc] text-slate-800 antialiased">
+
+  <!-- TOP NAVBAR -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
+      <div class="flex items-center space-x-3 shrink-0">
+        <div class="h-10 w-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+          <i class="fa-solid fa-graduation-cap text-lg"></i>
+        </div>
+        <div>
+          <span class="text-xl font-bold tracking-tight text-slate-900">Edu<span class="text-blue-600">Wave</span></span>
+          <span class="block text-[10px] uppercase tracking-wider font-semibold text-slate-400">Technical Academy</span>
+        </div>
+      </div>
+
+      <!-- Real-Time Search Bar -->
+      <div class="flex-1 max-w-md mx-4">
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+          <input id="searchInput" type="text" oninput="handleSearch(this.value)" placeholder="Search courses, ladder logic, SCADA, web dev..." class="w-full pl-10 pr-4 py-2 bg-slate-100/80 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-600 transition">
+        </div>
+      </div>
+
+      <!-- Guest Nav Controls -->
+      <div id="guestNav" class="flex items-center space-x-3 shrink-0">
+        <button onclick="openModal('loginModal')" class="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-blue-600 transition">
+          <i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Sign In
+        </button>
+        <button onclick="openModal('loginModal')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow-sm transition">
+          Get Started
+        </button>
+      </div>
+
+      <!-- Authenticated Nav Controls -->
+      <div id="userNav" class="hidden flex items-center space-x-4 shrink-0">
+        <span id="userRoleBadge" class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700">STUDENT</span>
+        <span id="userNameDisplay" class="text-sm font-semibold text-slate-800"></span>
+        <button onclick="handleLogout()" class="px-3 py-1.5 border border-slate-300 hover:bg-slate-100 rounded-lg text-xs font-medium text-slate-600 transition">
+          Sign Out
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-8">
+
+    <!-- HERO SECTION -->
+    <section class="bg-gradient-to-br from-white to-slate-100 p-8 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="space-y-3 max-w-2xl">
+        <span class="inline-block px-3 py-1 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold rounded-full">
+          • Role-Based Access Engine V1 Active
+        </span>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+          Master Real-World Technical Skills with <span class="text-blue-600">Next-Generation Learning</span>
+        </h1>
+        <p class="text-sm text-slate-600 leading-relaxed">
+          Structured engineering curricula, modular roadmaps, and verified student enrollment management built on Django REST framework.
+        </p>
+      </div>
+    </section>
+
+    <!-- EDUCATOR STUDIO (Visible only to Teacher & Admin) -->
+    <section id="educatorStudio" class="hidden bg-white p-6 rounded-2xl border-2 border-blue-500/30 shadow-sm">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="p-2 bg-amber-100 text-amber-800 rounded-lg text-sm"><i class="fa-solid fa-chalkboard-user"></i></span>
+            <h2 class="text-xl font-bold text-slate-900">Educator Studio</h2>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">Publish new courses and attach lesson modules for students.</p>
+        </div>
+        <button onclick="openModal('createCourseModal')" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow transition flex items-center gap-2">
+          <i class="fa-solid fa-plus"></i> Create New Course
+        </button>
+      </div>
+    </section>
+
+    <!-- STUDENT ACTIVE ENROLLMENTS (Visible ONLY to Logged-in Students) -->
+    <section id="studentEnrollmentsSection" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-book-bookmark text-blue-600"></i> My Active Enrollments
+          </h2>
+          <p class="text-xs text-slate-500">Courses you are currently taking.</p>
+        </div>
+      </div>
+      <div id="enrolledCoursesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Injected dynamically -->
+      </div>
+    </section>
+
+    <!-- EXPLORE COURSE CATALOG -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-regular fa-compass text-blue-600"></i> Explore Course Catalog
+          </h2>
+          <p class="text-xs text-slate-500">Explore structured curricula created by verified educators.</p>
+        </div>
+        <span id="catalogCount" class="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full"></span>
+      </div>
+      <div id="courseCatalog" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Injected dynamically -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL: SIGN IN -->
+  <div id="loginModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl relative">
+      <button onclick="closeModal('loginModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold">✕</button>
+      <h3 class="text-lg font-bold text-slate-900 mb-1">Sign In</h3>
+      <p class="text-xs text-slate-500 mb-4">Enter your registered email and password.</p>
+      <form onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Email Address</label>
+          <input id="loginEmail" type="email" required class="w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-600" placeholder="prachiahire75@gmail.com">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Password</label>
+          <input id="loginPassword" type="password" required class="w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-600" placeholder="••••••••">
+        </div>
+        <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition">Sign In</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CREATE COURSE (Teacher/Admin Only) -->
+  <div id="createCourseModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl relative">
+      <button onclick="closeModal('createCourseModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold">✕</button>
+      <h3 class="text-lg font-bold text-slate-900 mb-1">Create New Course</h3>
+      <p class="text-xs text-slate-500 mb-4">Publish a new engineering course to the catalog.</p>
+      <form onsubmit="handleCreateCourse(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Course Title</label>
+          <input id="courseTitle" type="text" required class="w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-600" placeholder="PLC Programming & Industrial Automation">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Course Description</label>
+          <textarea id="courseDescription" rows="4" required class="w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-600" placeholder="Describe the topics and skills covered..."></textarea>
+        </div>
+        <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition">Publish Course</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD MODULE (Teacher/Admin Only) -->
+  <div id="addModuleModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl relative">
+      <button onclick="closeModal('addModuleModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold">✕</button>
+      <h3 class="text-lg font-bold text-slate-900 mb-1">Add Lesson Module</h3>
+      <p class="text-xs text-slate-500 mb-4">Attach a new chapter or topic to this course.</p>
+      <form onsubmit="handleAddModule(event)" class="space-y-4">
+        <input type="hidden" id="moduleCourseId">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Module Title</label>
+          <input id="moduleTitle" type="text" required class="w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-600" placeholder="e.g. Chapter 1: Introduction to Ladder Logic">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Module Content / Outline</label>
+          <textarea id="moduleContent" rows="3" class="w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-600" placeholder="Brief lesson notes or syllabus breakdown..."></textarea>
+        </div>
+        <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition">Add Module</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden px-4 py-3 rounded-xl shadow-lg text-sm font-semibold text-white transition"></div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    let token = localStorage.getItem("eduwave_token") || null;
+    let currentUser = null;
+    let rawCourses = [];
+    let enrolledCourseIds = new Set();
+    let currentSearchTerm = "";
+
+    function notify(msg, type = "success") {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = `fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-semibold text-white transition ${type === 'error' ? 'bg-red-600' : 'bg-emerald-600'}`;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3500);
+    }
+
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    function handleSearch(query) {
+      currentSearchTerm = (query || "").toLowerCase().trim();
+      renderCatalog();
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+      const password = document.getElementById('loginPassword').value;
+
+      try {
+        const res = await fetch('/auth/login', {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email, username: email, password: password })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          token = data.access || data.access_token;
+          localStorage.setItem("eduwave_token", token);
+          closeModal('loginModal');
+          notify("Authenticated successfully");
+          await checkAuth();
+        } else {
+          notify("Invalid credentials", "error");
+        }
+      } catch (err) {
+        notify("Network error during login", "error");
+      }
+    }
+
+    async function checkAuth() {
+      token = localStorage.getItem("eduwave_token");
+      if (!token) {
+        currentUser = null;
+        updateUI();
+        return;
+      }
+
+      try {
+        const res = await fetch('/auth/me', {
+          headers: {
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json"
+          }
+        });
+
+        if (res.ok) {
+          currentUser = await res.json();
+        } else {
+          localStorage.removeItem("eduwave_token");
+          token = null;
+          currentUser = null;
+        }
+      } catch (err) {
+        currentUser = null;
+      }
+      updateUI();
+    }
+
+    function updateUI() {
+      const guestNav = document.getElementById('guestNav');
+      const userNav = document.getElementById('userNav');
+      const userNameDisplay = document.getElementById('userNameDisplay');
+      const userRoleBadge = document.getElementById('userRoleBadge');
+      const educatorStudio = document.getElementById('educatorStudio');
+      const studentSection = document.getElementById('studentEnrollmentsSection');
+
+      if (currentUser) {
+        guestNav.classList.add('hidden');
+        userNav.classList.remove('hidden');
+        userNameDisplay.textContent = currentUser.name || currentUser.email;
+
+        const role = (currentUser.role || '').toLowerCase();
+        userRoleBadge.textContent = role.toUpperCase();
+        userRoleBadge.className = "px-2.5 py-1 text-xs font-semibold rounded-full " + 
+          (role === 'admin' ? "bg-purple-100 text-purple-700" : 
+           role === 'teacher' ? "bg-amber-100 text-amber-800" : "bg-blue-100 text-blue-700");
+
+        // Role Visibility
+        if (role === 'teacher' || role === 'admin') {
+          educatorStudio.classList.remove('hidden');
+        } else {
+          educatorStudio.classList.add('hidden');
+        }
+
+        if (role === 'student') {
+          studentSection.classList.remove('hidden');
+          loadMyEnrollments();
+        } else {
+          studentSection.classList.add('hidden');
+        }
+      } else {
+        guestNav.classList.remove('hidden');
+        userNav.classList.add('hidden');
+        educatorStudio.classList.add('hidden');
+        studentSection.classList.add('hidden');
+        enrolledCourseIds.clear();
+      }
+
+      loadCourses();
+    }
+
+    async function loadCourses() {
+      try {
+        const res = await fetch('/courses/');
+        if (res.ok) {
+          rawCourses = await res.json();
+          renderCatalog();
+        }
+      } catch (err) {
+        console.error("Failed to load courses", err);
+      }
+    }
+
+    async function loadMyEnrollments() {
+      if (!token) return;
+      try {
+        const res = await fetch('/my-enrollments', {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        if (res.ok) {
+          const enrolledCourses = await res.json();
+          enrolledCourseIds = new Set(enrolledCourses.map(c => c.id));
+          renderEnrolledSection(enrolledCourses);
+          renderCatalog(); // re-render buttons to reflect updated enrollment status
+        }
+      } catch (err) {
+        console.error("Failed to fetch enrollments", err);
+      }
+    }
+
+    function renderEnrolledSection(courses) {
+      const container = document.getElementById('enrolledCoursesGrid');
+      if (!container) return;
+
+      if (courses.length === 0) {
+        container.innerHTML = `<div class="col-span-full py-8 text-center text-slate-400 bg-white rounded-2xl border border-slate-200 text-sm">You have not enrolled in any courses yet. Pick a course from the catalog below!</div>`;
+        return;
+      }
+
+      container.innerHTML = courses.map(c => `
+        <div class="bg-white p-6 rounded-2xl border border-blue-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-md text-[11px] font-bold">ACTIVE LEARNER</span>
+              <span class="text-xs text-slate-400 font-medium">${(c.modules || []).length} Modules</span>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900">${c.title}</h3>
+            <p class="text-xs text-slate-500 mt-1 mb-3">Instructor: ${c.instructor_name || c.instructor_email || 'Faculty'}</p>
+            <p class="text-sm text-slate-600 line-clamp-2">${c.description}</p>
+          </div>
+          <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+            <button onclick="handleUnenroll(${c.id})" class="text-xs font-semibold text-red-500 hover:text-red-700 transition">
+              <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Drop Course
+            </button>
+            <span class="text-xs font-bold text-blue-600">In Progress</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderCatalog() {
+      const container = document.getElementById('courseCatalog');
+      const countEl = document.getElementById('catalogCount');
+      if (!container) return;
+
+      const filtered = rawCourses.filter(c => {
+        if (!currentSearchTerm) return true;
+        return (c.title || '').toLowerCase().includes(currentSearchTerm) ||
+               (c.description || '').toLowerCase().includes(currentSearchTerm);
+      });
+
+      if (countEl) countEl.textContent = `${filtered.length} Courses`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="col-span-full py-10 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">No matching courses found.</div>`;
+        return;
+      }
+
+      const role = currentUser ? (currentUser.role || '').toLowerCase() : null;
+
+      container.innerHTML = filtered.map(c => {
+        const isEnrolled = enrolledCourseIds.has(c.id);
+
+        let actionButton = '';
+        if (role === 'student') {
+          if (isEnrolled) {
+            actionButton = `<span class="px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-bold flex items-center gap-1.5"><i class="fa-solid fa-check"></i> Enrolled</span>`;
+          } else {
+            actionButton = `<button onclick="handleEnroll(${c.id})" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-sm transition"><i class="fa-solid fa-plus mr-1"></i> Enroll</button>`;
+          }
+        } else if (role === 'teacher' || role === 'admin') {
+          actionButton = `<button onclick="openAddModuleModal(${c.id})" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition"><i class="fa-solid fa-plus mr-1"></i> Add Module</button>`;
+        } else {
+          actionButton = `<button onclick="openModal('loginModal')" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-sm transition">Enroll</button>`;
+        }
+
+        return `
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-semibold text-slate-400">${(c.modules || []).length} Modules</span>
+                <span class="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 rounded font-medium">Verified</span>
+              </div>
+              <h3 class="text-lg font-bold text-slate-900">${c.title}</h3>
+              <p class="text-xs text-slate-500 mt-1 mb-3">Instructor: ${c.instructor_name || c.instructor_email || 'Faculty'}</p>
+              <p class="text-sm text-slate-600 mb-4">${c.description}</p>
+            </div>
+            <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+              ${actionButton}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function handleEnroll(courseId) {
+      if (!token) {
+        openModal('loginModal');
+        return;
+      }
+      try {
+        const res = await fetch(`/courses/${courseId}/enroll`, {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + token }
+        });
+        if (res.ok) {
+          notify("Successfully enrolled in course!");
+          loadMyEnrollments();
+        } else {
+          notify("Failed to enroll", "error");
+        }
+      } catch (err) {
+        notify("Server error", "error");
+      }
+    }
+
+    async function handleUnenroll(courseId) {
+      try {
+        const res = await fetch(`/courses/${courseId}/unenroll`, {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + token }
+        });
+        if (res.ok) {
+          notify("Unenrolled from course");
+          loadMyEnrollments();
+        } else {
+          notify("Failed to unenroll", "error");
+        }
+      } catch (err) {
+        notify("Server error", "error");
+      }
+    }
+
+    function openAddModuleModal(courseId) {
+      document.getElementById('moduleCourseId').value = courseId;
+      openModal('addModuleModal');
+    }
+
+    async function handleAddModule(e) {
+      e.preventDefault();
+      const courseId = document.getElementById('moduleCourseId').value;
+      const title = document.getElementById('moduleTitle').value.trim();
+      const content = document.getElementById('moduleContent').value.trim();
+
+      const res = await fetch(`/courses/${courseId}/modules`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({ title, content })
+      });
+
+      if (res.ok) {
+        notify("Module added successfully!");
+        closeModal('addModuleModal');
+        document.getElementById('moduleTitle').value = '';
+        document.getElementById('moduleContent').value = '';
+        loadCourses();
+      } else {
+        notify("Failed to add module", "error");
+      }
+    }
+
+    async function handleCreateCourse(e) {
+      e.preventDefault();
+      const title = document.getElementById('courseTitle').value.trim();
+      const description = document.getElementById('courseDescription').value.trim();
+
+      const res = await fetch('/courses/', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({ title, description })
+      });
+
+      if (res.ok) {
+        notify("Course published successfully!");
+        closeModal('createCourseModal');
+        document.getElementById('courseTitle').value = '';
+        document.getElementById('courseDescription').value = '';
+        loadCourses();
+      } else {
+        notify("Failed to create course", "error");
+      }
+    }
+
+    function handleLogout() {
+      localStorage.removeItem("eduwave_token");
+      token = null;
+      currentUser = null;
+      notify("Signed out successfully");
+      updateUI();
+    }
+
+    window.addEventListener('DOMContentLoaded', checkAuth);
+  </script>
+</body>
+</html>
