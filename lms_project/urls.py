@@ -36,4 +36,6 @@ urlpatterns = [
     path('courses/<int:course_id>/enroll', views.EnrollCourseView.as_view(), name='enroll'),
     path('courses/<int:course_id>/unenroll', views.UnenrollCourseView.as_view(), name='unenroll'),
     path('my-enrollments', views.MyEnrollmentsView.as_view(), name='my_enrollments'),
+    path('modules/<int:module_id>/quiz/', views.QuizDetailView.as_view(), name='module_quiz'),
+    path('quizzes/<int:quiz_id>/submit/', views.SubmitQuizView.as_view(), name='submit_quiz'),
 ]

@@ -9,6 +9,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 import jwt
 from django.conf import settings
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from .models import Quiz, Question, Choice, QuizSubmission
 
 def index(request):
     """Serves the Single Page UI template."""
@@ -157,4 +158,131 @@ class LoginView(APIView):
             }, status=status.HTTP_200_OK)
 
         return Response({"detail": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
+    class MyEnrollmentsView(APIView):
+      def get(self, request):
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        token = auth_header.split(' ')[1]
+        try:
+            payload = jwt.decode(settings.SECRET_KEY, algorithms=['HS256'])
+            user = User.objects.get(id=payload['user_id'])
+        except Exception:
+            return Response({'error': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        enrollments = Enrollment.objects.filter(student=user).select_related('course')
+        data = []
+
+        for e in enrollments:
+            total_modules = e.course.modules.count()
+            completed_modules = ModuleProgress.objects.filter(
+                student=user,
+                module__course=e.course,
+                completed=True
+            ).count()
+
+            percentage = int((completed_modules / total_modules) * 100) if total_modules > 0 else 0
+
+            data.append({
+                'id': e.id,
+                'course_id': e.course.id,
+                'course_title': e.course.title,
+                'course_description': e.course.description,
+                'enrolled_at': e.enrolled_at,
+                'total_modules': total_modules,
+                'completed_modules': completed_modules,
+                'progress_percentage': percentage
+            })
+
+        return Response(data, status=status.HTTP_200_OK)
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        token = auth_header.split(' ')[1]
+        try:
+            payload = jwt.decode(settings.SECRET_KEY, algorithms=['HS256'])
+            user = User.objects.get(id=payload['user_id'])
+        except Exception:
+            return Response({'error': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        enrollments = Enrollment.objects.filter(student=user).select_related('course')
+        data = []
+
+        for e in enrollments:
+            total_modules = e.course.modules.count()
+            completed_modules = ModuleProgress.objects.filter(
+                student=user,
+                module__course=e.course,
+                completed=True
+            ).count()
+
+            percentage = int((completed_modules / total_modules) * 100) if total_modules > 0 else 0
+
+            data.append({
+                'id': e.id,
+                'course_id': e.course.id,
+                'course_title': e.course.title,
+                'course_description': e.course.description,
+                'enrolled_at': e.enrolled_at,
+                'total_modules': total_modules,
+                'completed_modules': completed_modules,
+                'progress_percentage': percentage
+            })
+
+        return Response(data, status=status.HTTP_200_OK)
+class QuizDetailView(APIView):
+    """Returns quiz questions and choices without exposing is_correct."""
+    def get(self, request, module_id):
+        quiz = get_object_or_404(Quiz, module_id=module_id)
+        questions_data = []
+        for q in quiz.questions.all():
+            questions_data.append({
+                "id": q.id,
+                "text": q.text,
+                "choices": [{"id": c.id, "text": c.text} for c in q.choices.all()]
+            })
+        return Response({
+            "quiz_id": quiz.id,
+            "title": quiz.title,
+            "pass_percentage": quiz.pass_percentage,
+            "questions": questions_data
+        }, status=status.HTTP_200_OK)
+
+
+class SubmitQuizView(APIView):
+    """Calculates student score and saves submission."""
+    def post(self, request, quiz_id):
+        user = get_authenticated_user(request)
+        if not user:
+            return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        quiz = get_object_or_404(Quiz, id=quiz_id)
+        selected_choices = request.data.get("answers", {})  # { "<question_id>": <choice_id> }
+
+        total_questions = quiz.questions.count()
+        if total_questions == 0:
+            return Response({"error": "Quiz has no questions"}, status=status.HTTP_400_BAD_REQUEST)
+
+        correct_count = 0
+        for q_id, c_id in selected_choices.items():
+            if Choice.objects.filter(id=c_id, question_id=q_id, is_correct=True).exists():
+                correct_count += 1
+
+        percentage = (correct_count / total_questions) * 100
+        is_passed = percentage >= quiz.pass_percentage
+
+        submission, _ = QuizSubmission.objects.update_or_create(
+            student=user,
+            quiz=quiz,
+            defaults={"score": percentage, "passed": is_passed}
+        )
+
+        return Response({
+            "score": percentage,
+            "passed": is_passed,
+            "correct_answers": correct_count,
+            "total_questions": total_questions
+        }, status=status.HTTP_200_OK)
 # Create your views here.

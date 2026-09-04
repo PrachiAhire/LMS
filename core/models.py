@@ -58,3 +58,47 @@ class Enrollment(models.Model):
 
     def __str__(self):
         return f"{self.student.email} enrolled in {self.course.title}"
+class ModuleProgress(models.Model):
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='module_progress')
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='student_progress')
+    completed = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('student', 'module')
+
+    def __str__(self):
+        status = "Completed" if self.completed else "Incomplete"
+        return f"{self.student.username} - {self.module.title}: {status}"
+class Quiz(models.Model):
+    module = models.OneToOneField(Module, on_delete=models.CASCADE, related_name='quiz')
+    title = models.CharField(max_length=200)
+    pass_percentage = models.PositiveIntegerField(default=60)
+
+    def __str__(self):
+        return f"Quiz: {self.title} ({self.module.title})"
+
+class Question(models.Model):
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='questions')
+    text = models.TextField()
+
+    def __str__(self):
+        return self.text
+
+class Choice(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='choices')
+    text = models.CharField(max_length=255)
+    is_correct = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.text} ({'Correct' if self.is_correct else 'Wrong'})"
+
+class QuizSubmission(models.Model):
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='quiz_submissions')
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='submissions')
+    score = models.FloatField()
+    passed = models.BooleanField(default=False)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('student', 'quiz')

@@ -181,7 +181,15 @@
 
   <!-- TOAST NOTIFICATION -->
   <div id="toast" class="fixed bottom-5 right-5 z-50 hidden px-4 py-3 rounded-xl shadow-lg text-sm font-semibold text-white transition"></div>
-
+  <div class="mt-4">
+    <div class="flex justify-between text-xs text-gray-500 mb-1">
+        <span>Progress (${item.completed_modules}/${item.total_modules} completed)</span>
+        <span class="font-semibold text-indigo-600">${item.progress_percentage}%</span>
+    </div>
+    <div class="w-full bg-gray-200 rounded-full h-2">
+        <div class="bg-indigo-600 h-2 rounded-full transition-all duration-300" style="width: ${item.progress_percentage}%"></div>
+    </div>
+</div>
   <!-- JAVASCRIPT LOGIC -->
   <script>
     let token = localStorage.getItem("eduwave_token") || null;
@@ -522,6 +530,36 @@
     }
 
     window.addEventListener('DOMContentLoaded', checkAuth);
+
+    async function toggleModuleProgress(moduleId, courseId) {
+    const token = localStorage.getItem('eduwave_token');
+    if (!token) {
+        showToast('Please log in first', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/modules/${moduleId}/toggle-progress/`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            showToast(data.completed ? 'Lesson marked complete!' : 'Lesson marked incomplete', 'success');
+            // Refresh enrollments or module view to update the UI
+            fetchMyEnrollments();
+        } else {
+            showToast(data.error || 'Failed to update progress', 'error');
+        }
+    } catch (err) {
+        showToast('Network error updating lesson status', 'error');
+    }
+}
   </script>
 </body>
 </html>
