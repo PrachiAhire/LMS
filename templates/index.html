@@ -149,14 +149,19 @@
     <h3 class="text-lg font-bold text-slate-900 mb-1">Create an Account</h3>
     <p class="text-xs text-slate-500 mb-4">Enter your email and a password to get started.</p>
     <form onsubmit="handleRegister(event)" class="space-y-4">
-      <div>
-        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Email Address</label>
-        <input id="registerEmail" type="email" required class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="you@example.com">
-      </div>
-      <div>
-        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Password</label>
-        <input id="registerPassword" type="password" required class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="••••••••">
-      </div>
+      <!-- In index.html: Update the Register form inputs -->
+<div>
+  <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Email Address</label>
+  <input id="registerEmail" type="email" required class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="you@example.com">
+</div>
+<div>
+  <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Password</label>
+  <input id="registerPassword" type="password" minlength="6" required class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="At least 6 characters">
+</div>
+<div>
+  <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Confirm Password</label>
+  <input id="registerConfirmPassword" type="password" minlength="6" required class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Re-enter password">
+</div>
       <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm">
         Sign Up & Get Started
       </button>
@@ -275,7 +280,22 @@
   e.preventDefault();
   const email = document.getElementById('registerEmail').value.trim().toLowerCase();
   const password = document.getElementById('registerPassword').value;
+  const ConfirmPassword = document.getElementById('registerConfirmPassword').value;
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(email)) {
+    notify("Please enter a valid email address.", "error");
+    return;
+  }
+  if (password.length < 6) {
+    notify("Password must be at least 6 characters long.", "error");
+    return;
+  }
 
+  // Password match check
+  if (password !== confirmPassword) {
+    notify("Passwords do not match!", "error");
+    return;
+  }
   try {
     const res = await fetch('/auth/register/', {
       method: "POST",
