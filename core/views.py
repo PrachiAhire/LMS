@@ -134,6 +134,7 @@ class MyEnrollmentsView(generics.ListAPIView):
         return Enrollment.objects.filter(student=self.request.user)
 
 class LoginView(APIView):
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     def post(self, request):
