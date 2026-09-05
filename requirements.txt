@@ -16,6 +16,7 @@ ecdsa==0.19.2
 email-validator==2.3.0
 fastapi==0.141.1
 greenlet==3.5.5
+gunicorn==26.2.0
 h11==0.16.0
 idna==3.18
 passlib==1.7.4
@@ -35,3 +36,4 @@ typing-inspection==0.4.4
 typing_extensions==4.16.0
 tzdata==2026.3
 uvicorn==0.52.3
+whitenoise==6.12.0

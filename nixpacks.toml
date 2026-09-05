@@ -1,0 +1,14 @@
+[phases.setup]
+nixPkgs = ["python3"]
+
+[phases.install]
+cmds = ["pip install -r requirements.txt"]
+
+[phases.build]
+cmds = [
+  "python manage.py collectstatic --noinput",
+  "python manage.py migrate"
+]
+
+[start]
+cmd = "gunicorn lms_project.wsgi --log-file -"
