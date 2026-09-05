@@ -23,7 +23,7 @@ urlpatterns = [
     path('', views.index, name='home'),
     
     # Auth Endpoints
-    path('auth/register', views.RegisterView.as_view(), name='register'),
+    path('auth/register/', views.RegisterView.as_view(), name='register'),
     path('auth/login', views.LoginView.as_view(), name='login'),
     path('auth/me', views.MeView.as_view(), name='me'),
     
@@ -37,5 +37,6 @@ urlpatterns = [
     path('courses/<int:course_id>/unenroll', views.UnenrollCourseView.as_view(), name='unenroll'),
     path('my-enrollments', views.MyEnrollmentsView.as_view(), name='my_enrollments'),
     path('modules/<int:module_id>/quiz/', views.QuizDetailView.as_view(), name='module_quiz'),
-    path('quizzes/<int:quiz_id>/submit/', views.SubmitQuizView.as_view(), name='submit_quiz'),
+    path('quizzes/<int:quiz_id>/submit/', views.SubmitQuizView.as_view(), name='submit_quiz')
+
 ]

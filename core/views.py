@@ -10,15 +10,19 @@ import jwt
 from django.conf import settings
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import Quiz, Question, Choice, QuizSubmission
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 def index(request):
     """Serves the Single Page UI template."""
     return render(request, 'index.html')
 
+@method_decorator(csrf_exempt, name='dispatch')
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
+    authentication_classes = []
 
 import jwt
 from django.conf import settings
